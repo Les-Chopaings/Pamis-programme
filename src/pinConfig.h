@@ -17,5 +17,6 @@
 #define CHANNEL_MOTOR_FWD3 4
 #define CHANNEL_MOTOR_REV3 5
 
+#define INPUT_DIODE 22
 
 #endif
