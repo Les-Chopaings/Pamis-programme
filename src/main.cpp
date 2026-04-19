@@ -77,7 +77,7 @@ VL53L7CX sensor_vl53l7cx_top(&DEV_I2C, LPN_PIN, I2C_RST_PIN);
 
 bool EnableAmbient = false;
 bool EnableSignal = false;
-uint8_t res = VL53L7CX_RESOLUTION_4X4;
+uint8_t res = VL53L7CX_RESOLUTION_8X8;
 char report[256];
 
 /* Setup ---------------------------------------------------------------------*/
