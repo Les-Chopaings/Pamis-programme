@@ -63,9 +63,9 @@
 #endif
 #define SerialPort Serial
 
-#define LPN_PIN A3
-#define I2C_RST_PIN A6
-#define PWREN_PIN A5
+#define LPN_PIN -1
+#define I2C_RST_PIN -1
+#define PWREN_PIN -1
 
 void print_result(VL53L7CX_ResultsData *Result);
 void clear_screen(void);
@@ -95,7 +95,7 @@ void setup()
   SerialPort.begin(460800);
 
   // Initialize I2C bus.
-  DEV_I2C.begin();
+  DEV_I2C.begin(8,9);
 
   // Configure VL53L7CX component.
   sensor_vl53l7cx_top.begin();
