@@ -16,8 +16,9 @@
 #define INPUT_DIODE 22
 
 
-#define PIN_OPTDIOD1 GPIO_NUM_5
-
+#define PIN_OPTDIOD_mot_1 GPIO_NUM_5
+#define PIN_OPTDIOD_mot_2 GPIO_NUM_6
+#define PIN_OPTDIOD_start GPIO_NUM_3
 
 
 #endif

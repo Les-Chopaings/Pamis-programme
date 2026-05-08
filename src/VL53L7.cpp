@@ -54,6 +54,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <vl53l7cx_class.h>
+#include <VL53L7.h>
 
 
 #ifdef ARDUINO_SAM_DUE
@@ -68,9 +69,13 @@
 #define PWREN_PIN -1
 
 void print_result(VL53L7CX_ResultsData *Result);
+void affichage_ligne(VL53L7CX_ResultsData *Result, int ligne[8], bool show=false);
 void clear_screen(void);
 void handle_cmd(uint8_t cmd);
 void display_commands_banner(void);
+int find_minimum(int ligne[8], int mini);
+void print_ligne(int* ligne);
+
 
 // Components.
 VL53L7CX sensor_vl53l7cx_top(&DEV_I2C, LPN_PIN, I2C_RST_PIN);
@@ -81,7 +86,7 @@ uint8_t res = VL53L7CX_RESOLUTION_8X8;
 char report[256];
 
 /* Setup ---------------------------------------------------------------------*/
-void setup()
+void init_VL53L7()
 {
 
   // Enable PWREN pin if present
@@ -95,21 +100,24 @@ void setup()
   SerialPort.begin(460800);
 
   // Initialize I2C bus.
-  DEV_I2C.begin(8,9);
+  DEV_I2C.begin(8,9, 400000);
 
   // Configure VL53L7CX component.
   sensor_vl53l7cx_top.begin();
 
   sensor_vl53l7cx_top.init_sensor();
 
+  sensor_vl53l7cx_top.vl53l7cx_set_ranging_frequency_hz(60);
+
   // Start Measurements
   sensor_vl53l7cx_top.vl53l7cx_start_ranging();
+
 }
 
-void loop()
+void affichage_data(int *ligne, bool show)
 {
   VL53L7CX_ResultsData Results;
-  uint8_t NewDataReady = 0;
+  uint8_t NewDataReady;
   uint8_t status;
 
   do {
@@ -118,15 +126,61 @@ void loop()
 
   if ((!status) && (NewDataReady != 0)) {
     status = sensor_vl53l7cx_top.vl53l7cx_get_ranging_data(&Results);
-    print_result(&Results);
+    affichage_ligne(&Results, ligne, show);
   }
 
-  if (Serial.available()>0)
-  {
-    handle_cmd(Serial.read());
-  }
-  delay(1000);
+  // if (Serial.available()>0)
+  // {
+  //   handle_cmd(Serial.read());
+  // }
+  // delay(10);
 }
+
+
+void affichage_ligne(VL53L7CX_ResultsData *Result, int *ligne, bool show)
+{
+    int row = 0;
+
+    for(int col = 0; col < 8; col++)
+    {
+        int index = row * 8 + col;
+
+        if (show){
+          Serial.print(Result->distance_mm[index]);
+          Serial.print(" ");
+        }
+        ligne[col] = Result->distance_mm[index];
+        
+    }
+
+    Serial.println();
+}
+
+
+void print_ligne(int* ligne){
+  for (int index = 0; index < 8; index++){
+    Serial.print(ligne[index]);
+    Serial.print('\t');
+  }
+}
+
+
+int find_minimum(int* ligne, int mini)
+{
+  mini = 200;
+  Serial.print("valeur mini:\t");
+  for (int col = 0; col < 4; col++){
+    if (ligne[col] < mini, ligne[col] > 2){
+      
+      Serial.print(mini);
+      Serial.print('\t');
+      mini = ligne[col];
+    }
+  }
+
+  return mini;
+}
+
 
 void print_result(VL53L7CX_ResultsData *Result)
 {

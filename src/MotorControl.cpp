@@ -5,7 +5,9 @@ void initPort(void){
     pinMode(PIN_MOTOR_REV1,OUTPUT);
     pinMode(PIN_MOTOR_FWD2,OUTPUT);
     pinMode(PIN_MOTOR_REV2,OUTPUT);
-    pinMode(PIN_OPTDIOD1, INPUT);
+    pinMode(PIN_OPTDIOD_mot_1, INPUT);
+    pinMode(PIN_OPTDIOD_mot_2, INPUT);
+    pinMode(PIN_OPTDIOD_start, INPUT);
 
 
     const int freq = 30000;
@@ -44,5 +46,16 @@ void motorControl2(int drirectionFWD, int speed){
     else{
         ledcWrite(CHANNEL_MOTOR_FWD2,0);
         ledcWrite(CHANNEL_MOTOR_REV2,speed);
+    }
+}
+
+
+void read_fourche_optique(int last_value_mot1, int last_value_mot2){
+
+    int value_mot1  = digitalRead(PIN_OPTDIOD_mot_1);
+    int value_mot2  = digitalRead(PIN_OPTDIOD_mot_2);
+
+    if (last_value_mot1 !=value_mot1){
+
     }
 }
