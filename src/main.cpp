@@ -31,7 +31,7 @@ bool obstacle = false;
 
 int old_pos_mot1 = 0;
 int old_pos_mot2 = 0;
-int old_speed = 0;
+int old_speed = 250;
 int old_obstacle = false;
 int old_ligne[8];
 Position old_position = Position();

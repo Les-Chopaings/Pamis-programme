@@ -91,3 +91,42 @@ void odometrieCalc(Position &position, Param &param, Roue roue){
             break;
     }
 }
+
+
+float calcul_angle(Position &position, ObjectifPos &obj_pos){
+
+    float deltax = position.x - obj_pos.x;
+    float deltay = position.y - obj_pos.y;
+
+    return atan2(deltax,deltay);
+}
+
+
+float computeAngleError(Position &position,
+                        float targetAngle)
+{
+    return targetAngle - position.teta;
+}
+
+
+float computeMotors(float speed,
+                   float turn)
+{
+    float left  = speed - turn;
+    float right = speed + turn;
+
+    return left, right;
+}
+
+
+void Asservissement_angulaire(Position &position, ObjectifPos & obj_pos, int speed, int sensRotation){
+
+    float Kangle = 0.2;
+
+    float angle_obj = calcul_angle(position, obj_pos);
+    float angle_error = computeAngleError(position, angle_obj);
+    float left, rigth = computeMotors(speed, Kangle*angle_error);
+
+    motorControl1(sensRotation, left);
+    motorControl2(sensRotation, rigth);
+}
