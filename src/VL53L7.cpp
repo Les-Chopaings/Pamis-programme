@@ -168,12 +168,12 @@ void print_ligne(int* ligne){
 int find_minimum(int* ligne, int mini)
 {
   mini = 200;
-  Serial.print("valeur mini:\t");
+  // Serial.print("valeur mini:\t");
   for (int col = 0; col < 4; col++){
     if (ligne[col] < mini, ligne[col] > 2){
       
-      Serial.print(mini);
-      Serial.print('\t');
+      // Serial.print(mini);
+      // Serial.print('\t');
       mini = ligne[col];
     }
   }

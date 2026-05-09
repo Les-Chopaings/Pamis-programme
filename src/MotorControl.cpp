@@ -1,4 +1,8 @@
 #include "MotorControl.h"
+#include <Types.h>
+
+
+void odometrieCalc(Position &position, Param &param, Roue roue);
 
 void initPort(void){
     pinMode(PIN_MOTOR_FWD1,OUTPUT);
@@ -50,12 +54,40 @@ void motorControl2(int drirectionFWD, int speed){
 }
 
 
-void read_fourche_optique(int last_value_mot1, int last_value_mot2){
+void read_fourche_optique(int* last_value_mot1, int* last_value_mot2, int* pos_mot1, int* pos_mot2, Param &param, Position &position){
 
     int value_mot1  = digitalRead(PIN_OPTDIOD_mot_1);
     int value_mot2  = digitalRead(PIN_OPTDIOD_mot_2);
 
-    if (last_value_mot1 !=value_mot1){
+    if (*last_value_mot1 !=value_mot1){
+            *pos_mot1+=1;
+            *last_value_mot1 = value_mot1;
+            odometrieCalc(position,param, LEFT);
+            
+    }
 
+    if (*last_value_mot2 !=value_mot2){
+            *pos_mot2+=1;
+            *last_value_mot2 = value_mot2;
+            odometrieCalc(position, param, RIGTH);
+    }
+}
+
+
+void odometrieCalc(Position &position, Param &param, Roue roue){
+    switch (roue)
+    {
+        case LEFT:
+                position.y += param.stepForrwardG * sin(position.teta); //Voir pour optimisation
+                position.x += param.stepForrwardG * cos(position.teta); //Voir pour optimisation
+                position.teta -= param.stepAngleG;
+            break;
+        case RIGTH:
+                position.y += param.stepForrwardD * sin(position.teta); //Voir pour optimisation
+                position.x += param.stepForrwardD * cos(position.teta); //Voir pour optimisation
+                position.teta += param.stepAngleD;
+            break;
+        default:
+            break;
     }
 }
