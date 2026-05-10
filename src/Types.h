@@ -3,9 +3,9 @@
 
 #include <Arduino.h>
 
-#define DIAMETERWHEELD 2.0
-#define DIAMETERWHEELG 2.0
-#define DISTANCEWHEEL 4.0
+#define DIAMETERWHEELD 25.9
+#define DIAMETERWHEELG 25.9
+#define DISTANCEWHEEL 50.81
 #define NUMBERSTEPBYROTATION 48
 
 struct Position {

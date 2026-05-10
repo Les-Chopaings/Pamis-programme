@@ -12,6 +12,7 @@ void initPort(void){
     pinMode(PIN_OPTDIOD_mot_1, INPUT);
     pinMode(PIN_OPTDIOD_mot_2, INPUT);
     pinMode(PIN_OPTDIOD_start, INPUT);
+    pinMode(PIN_COULEUR, INPUT_PULLDOWN);
 
 
     const int freq = 30000;
@@ -80,12 +81,12 @@ void odometrieCalc(Position &position, Param &param, Roue roue){
         case LEFT:
                 position.y += param.stepForrwardG * sin(position.teta); //Voir pour optimisation
                 position.x += param.stepForrwardG * cos(position.teta); //Voir pour optimisation
-                position.teta -= param.stepAngleG;
+                position.teta += param.stepAngleG;
             break;
         case RIGTH:
-                position.y += param.stepForrwardD * sin(position.teta); //Voir pour optimisation
+                position.y += -param.stepForrwardD * sin(position.teta); //Voir pour optimisation
                 position.x += param.stepForrwardD * cos(position.teta); //Voir pour optimisation
-                position.teta += param.stepAngleD;
+                position.teta -= param.stepAngleD;
             break;
         default:
             break;
@@ -95,8 +96,8 @@ void odometrieCalc(Position &position, Param &param, Roue roue){
 
 float calcul_angle(Position &position, ObjectifPos &obj_pos){
 
-    float deltax = position.x - obj_pos.x;
-    float deltay = position.y - obj_pos.y;
+    float deltax = obj_pos.x - position.x;
+    float deltay = obj_pos.y - position.y;
 
     return atan2(deltax,deltay);
 }
@@ -109,24 +110,36 @@ float computeAngleError(Position &position,
 }
 
 
-float computeMotors(float speed,
-                   float turn)
-{
-    float left  = speed - turn;
-    float right = speed + turn;
+void computeMotors(int speed,
+                   float turn,
+                   float &left,
+                   float &right)
+{   
 
-    return left, right;
+    if (turn > 0){
+        left  = speed - turn;
+        right = speed + turn;
+    }
+    else {
+        left  = speed + abs(turn);
+        right = speed - abs(turn);
+    }
+
 }
 
 
+
 void Asservissement_angulaire(Position &position, ObjectifPos & obj_pos, int speed, int sensRotation){
-
-    float Kangle = 0.2;
-
+    float left;
+    float right;
+    float Kangle = 15;
+    speed = 200;
     float angle_obj = calcul_angle(position, obj_pos);
     float angle_error = computeAngleError(position, angle_obj);
-    float left, rigth = computeMotors(speed, Kangle*angle_error);
+    computeMotors(speed, Kangle*angle_error, left, right);
 
+    Serial.printf(" Angle robot : %.2f et angle voulu %.2f", position.teta, angle_obj);
+    Serial.printf(" Value des deux vitesse : %.2f et %.2f, turn : %.2f, speed : %.d", left, right, Kangle*angle_error, speed);
     motorControl1(sensRotation, left);
-    motorControl2(sensRotation, rigth);
+    motorControl2(sensRotation, right);
 }
