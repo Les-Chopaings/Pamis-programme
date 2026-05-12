@@ -2,8 +2,6 @@
 #include <Types.h>
 
 
-void odometrieCalc(Position &position, Param &param, Roue roue);
-
 void initPort(void){
     pinMode(PIN_MOTOR_FWD1,OUTPUT);
     pinMode(PIN_MOTOR_REV1,OUTPUT);
@@ -55,27 +53,41 @@ void motorControl2(int drirectionFWD, int speed){
 }
 
 
-void read_fourche_optique(int* last_value_mot1, int* last_value_mot2, int* pos_mot1, int* pos_mot2, Param &param, Position &position){
+void read_fourche_optique(int* pos_mot1, int* pos_mot2, Position &position){
+
+    static int last_value_mot1;
+    static int last_value_mot2;
 
     int value_mot1  = digitalRead(PIN_OPTDIOD_mot_1);
     int value_mot2  = digitalRead(PIN_OPTDIOD_mot_2);
 
-    if (*last_value_mot1 !=value_mot1){
+    if (last_value_mot1 !=value_mot1){
             *pos_mot1+=1;
-            *last_value_mot1 = value_mot1;
-            odometrieCalc(position,param, LEFT);
-            
+            last_value_mot1 = value_mot1;
+            odometrieCalc(position, LEFT);
     }
 
-    if (*last_value_mot2 !=value_mot2){
+    if (last_value_mot2 !=value_mot2){
             *pos_mot2+=1;
-            *last_value_mot2 = value_mot2;
-            odometrieCalc(position, param, RIGTH);
+            last_value_mot2 = value_mot2;
+            odometrieCalc(position, RIGTH);
     }
 }
 
+float normalizeAngle(float angle)
+{
+    angle = fmod(angle, 2.0f * M_PI);
 
-void odometrieCalc(Position &position, Param &param, Roue roue){
+    if (angle < 0)
+    {
+        angle += 2.0f * M_PI;
+    }
+
+    return angle;
+}
+
+void odometrieCalc(Position &position, Roue roue){
+    Param param = Param();
     switch (roue)
     {
         case LEFT:
@@ -91,6 +103,7 @@ void odometrieCalc(Position &position, Param &param, Roue roue){
         default:
             break;
     }
+    position.teta = normalizeAngle(position.teta);
 }
 
 

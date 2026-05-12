@@ -120,9 +120,8 @@ void affichage_data(int *ligne, bool show)
   uint8_t NewDataReady;
   uint8_t status;
 
-  do {
-    status = sensor_vl53l7cx_top.vl53l7cx_check_data_ready(&NewDataReady);
-  } while (!NewDataReady);
+
+  status = sensor_vl53l7cx_top.vl53l7cx_check_data_ready(&NewDataReady);
 
   if ((!status) && (NewDataReady != 0)) {
     status = sensor_vl53l7cx_top.vl53l7cx_get_ranging_data(&Results);
