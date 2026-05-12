@@ -42,8 +42,6 @@ bool etat_start = false;
 Position position = Position();
 
 
-volatile bool mot1_state = false;
-volatile bool mot2_state = false;
 
 volatile uint32_t mot1_rising_count = 0;
 volatile uint32_t mot1_falling_count = 0;
@@ -54,25 +52,25 @@ volatile uint32_t mot2_falling_count = 0;
 volatile uint32_t lastInterruptMot1 = 0;
 volatile uint32_t lastInterruptMot2 = 0;
 
-const uint32_t DEBOUNCE_US = 10; // 3 ms
+const uint32_t DEBOUNCE_US = 3000; // 3 ms
+
+volatile bool lastMot1State = false;
+volatile bool lastMot2State = false;
 
 void IRAM_ATTR isr_mot1()
 {
-    uint32_t now = micros();
+    bool state = digitalRead(PIN_OPTDIOD_mot_1);
 
-    // anti-rebond
-    if ((now - lastInterruptMot1) < DEBOUNCE_US)
+    // Ignore si l'état n'a pas changé
+    if (state == lastMot1State)
     {
         return;
     }
 
-    lastInterruptMot1 = now;
+    // Sauvegarde nouvel état
+    lastMot1State = state;
 
-    bool state = digitalRead(PIN_OPTDIOD_mot_1);
-
-    mot1_state = state;
-
-    //odometrieCalc(position, LEFT);
+    odometrieCalc(position, LEFT);
 
     if (state)
     {
@@ -86,19 +84,16 @@ void IRAM_ATTR isr_mot1()
 
 void IRAM_ATTR isr_mot2()
 {
-    uint32_t now = micros();
+    bool state = digitalRead(PIN_OPTDIOD_mot_2);
 
-    // anti-rebond
-    if ((now - lastInterruptMot2) < DEBOUNCE_US)
+    // Ignore si l'état n'a pas changé
+    if (state == lastMot2State)
     {
         return;
     }
 
-    lastInterruptMot2 = now;
-
-    bool state = digitalRead(PIN_OPTDIOD_mot_2);
-
-    mot2_state = state;
+    // Sauvegarde nouvel état
+    lastMot2State = state;
 
     odometrieCalc(position, RIGTH);
 
@@ -140,38 +135,56 @@ void setup() {
 
 void loop() {
   unsigned long now = millis();
-
-  ledcWrite(CHANNEL_MOTOR_FWD1,200);
-  ledcWrite(CHANNEL_MOTOR_REV1,0);
-  ledcWrite(CHANNEL_MOTOR_FWD2,0);
-  ledcWrite(CHANNEL_MOTOR_REV2,200);
-
-  affichage_data(ligne, true);
-
-  msNow = millis();
-  if((msNow - msPrevious) > 5){
-    Serial.println("too slow");
+  if(mot2_rising_count < 24*10){
+    ledcWrite(CHANNEL_MOTOR_FWD1,200);
+    ledcWrite(CHANNEL_MOTOR_REV1,0);
   }
-  msPrevious = msNow;
+  else{
+    ledcWrite(CHANNEL_MOTOR_FWD1,0);
+    ledcWrite(CHANNEL_MOTOR_REV1,0);
+  }
 
-  Serial.print("x : ");
-  Serial.print(position.x);
-  Serial.print(" y : ");
-  Serial.print(position.y);
-  Serial.print(" theta : ");
-  Serial.println(position.teta * RAD_TO_DEG);
+Serial.print(mot2_rising_count);
+Serial.print(" ");
+Serial.print(mot2_falling_count);
+Serial.print(" ");
+Serial.println(micros());
+
+//   if(mot1_rising_count < 24){
+//     ledcWrite(CHANNEL_MOTOR_FWD2,0);
+//     ledcWrite(CHANNEL_MOTOR_REV2,200);
+//   }
+//   else{
+//     ledcWrite(CHANNEL_MOTOR_FWD2,0);
+//     ledcWrite(CHANNEL_MOTOR_REV2,0);
+//   }
+
+//   affichage_data(ligne, true);
+
+//   msNow = millis();
+//   if((msNow - msPrevious) > 5){
+//     Serial.println("too slow");
+//   }
+//   msPrevious = msNow;
+
+//   Serial.print("x : ");
+//   Serial.print(position.x);
+//   Serial.print(" y : ");
+//   Serial.print(position.y);
+//   Serial.print(" theta : ");
+//   Serial.println(position.teta * RAD_TO_DEG);
 
 
 
 
 
-  Serial.print(mot1_rising_count);
-  Serial.print(" ");
-  Serial.print(mot1_falling_count);
-  Serial.print(" ");
-  Serial.print(mot2_rising_count);
-  Serial.print(" ");
-  Serial.println(mot2_falling_count);
+//   Serial.print(mot1_rising_count);
+//   Serial.print(" ");
+//   Serial.print(mot1_falling_count);
+//   Serial.print(" ");
+//   Serial.print(mot2_rising_count);
+//   Serial.print(" ");
+//   Serial.println(mot2_falling_count);
 
 
   // if (old_pos_mot1 != pos_mot1, old_pos_mot2 != pos_mot2, old_speed != speed, old_obstacle != obstacle, old_ligne != ligne, \
