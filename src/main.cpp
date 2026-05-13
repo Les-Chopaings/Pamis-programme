@@ -153,9 +153,18 @@ void print_result(VL53L7CX_ResultsData *Result)
 //     SerialPort.print(data[i]);
 //     SerialPort.print("\n");
 //   }
-  std::sort(data, data+4);
+    float minDist = 100000;
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (data[i] != 0 && data[i] < minDist)
+        {
+            minDist = data[i];
+        }
+    }
+  //std::sort(data, data+4);
   //SerialPort.print("mediane des valeurs: ");
-  SerialPort.println(data[2]);
+  SerialPort.println(minDist);
 
   //SerialPort.print("\n");
 }
