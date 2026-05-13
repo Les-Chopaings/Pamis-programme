@@ -8,8 +8,7 @@ void dashboard(
     int speed,
     bool obstacle,
     int ligne[8],
-    Position position,
-    Param param
+    Position position
 )
 {
     // Remet le curseur en haut
@@ -34,12 +33,12 @@ void dashboard(
         Serial.printf("%4d ", ligne[i]);
     }
 
-    Serial.println('\n');
+    Serial.println();
 
     Serial.println("Position Robot");
     Serial.printf("Position x : %.2f mm\n", position.x);
     Serial.printf("Position y : %.2f mm\n", position.y);
     Serial.printf("Angle : %.2f rad\n", position.teta);
 
-    Serial.println();
+    // Serial.println();
 }

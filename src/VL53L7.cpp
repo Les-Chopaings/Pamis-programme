@@ -107,11 +107,10 @@ void init_VL53L7()
 
   sensor_vl53l7cx_top.init_sensor();
 
-  sensor_vl53l7cx_top.vl53l7cx_set_ranging_frequency_hz(60);
+  sensor_vl53l7cx_top.vl53l7cx_set_ranging_frequency_hz(20);
 
   // Start Measurements
   sensor_vl53l7cx_top.vl53l7cx_start_ranging();
-
 }
 
 void affichage_data(int *ligne, bool show)
@@ -152,7 +151,7 @@ void affichage_ligne(VL53L7CX_ResultsData *Result, int *ligne, bool show)
         
     }
 
-    Serial.println();
+    // Serial.println();
 }
 
 
@@ -168,7 +167,7 @@ int find_minimum(int* ligne, int mini)
 {
   mini = 200;
   // Serial.print("valeur mini:\t");
-  for (int col = 0; col < 4; col++){
+  for (int col = 0; col < 8; col++){
     if (ligne[col] < mini, ligne[col] > 2){
       
       // Serial.print(mini);
@@ -178,6 +177,16 @@ int find_minimum(int* ligne, int mini)
   }
 
   return mini;
+}
+
+
+int calcul_moy_ligne(int* ligne){
+  float som = 0;
+  for (int col = 0; col < 8; col++){
+    som += ligne[col];
+  }
+
+  return som/8.0;
 }
 
 

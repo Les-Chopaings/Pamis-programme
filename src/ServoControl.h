@@ -8,5 +8,6 @@ extern Servo monServo;
 
 void initServo();
 void setServoAngle(int angle);
+void rotation_queue(int* sensRotation, int* rotation);
 
 #endif
