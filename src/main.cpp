@@ -98,7 +98,7 @@ void setup()
 
   sensor_vl53l7cx_top.init_sensor();
 
-  sensor_vl53l7cx_top.vl53l7cx_set_ranging_frequency_hz(20);
+  sensor_vl53l7cx_top.vl53l7cx_set_ranging_frequency_hz(60);
 
   // Start Measurements
   sensor_vl53l7cx_top.vl53l7cx_start_ranging();
@@ -126,11 +126,11 @@ void print_result(VL53L7CX_ResultsData *Result)
 {
   int8_t i, j, k, l;
 
-  SerialPort.print("\n\n");
+  //SerialPort.print("\n\n");
 
   for (j = 4; j <= 8; j += 4)
   {
-    SerialPort.print("\n");
+    //SerialPort.print("\n");
 
     for (l = 0; l < VL53L7CX_NB_TARGET_PER_ZONE; l++)
     {
@@ -148,15 +148,15 @@ void print_result(VL53L7CX_ResultsData *Result)
     }
   }
 
-  for (i = 0; i < 4; i++){
-    SerialPort.print("i: ");
-    SerialPort.print(data[i]);
-    SerialPort.print("\n");
-  }
+//   for (i = 0; i < 4; i++){
+//     SerialPort.print("i: ");
+//     SerialPort.print(data[i]);
+//     SerialPort.print("\n");
+//   }
   std::sort(data, data+4);
-  SerialPort.print("mediane des valeurs: ");
-  SerialPort.print(data[2]);
+  //SerialPort.print("mediane des valeurs: ");
+  SerialPort.println(data[2]);
 
-  SerialPort.print("\n");
+  //SerialPort.print("\n");
 }
 
