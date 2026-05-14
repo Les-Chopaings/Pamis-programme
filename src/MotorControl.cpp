@@ -181,8 +181,8 @@ float Asservissement_angulaire(Position &position, ObjectifPos & obj_pos){
 void go_forward(ObjectifPos & obj_pos, Position &position, int speed, bool *obj_atteint){
 
     // float dist = sqrt(pow((position.x - obj_pos.x),2) + pow((position.y - obj_pos.y),2));
-    int sensRotation_mot1 = 1;
-    int sensRotation_mot2 = 1;
+    int sensRotation_mot1 = -1;
+    int sensRotation_mot2 = -1;
 
     if (position.x < obj_pos.x){
         

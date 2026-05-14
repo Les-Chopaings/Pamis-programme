@@ -4,9 +4,9 @@
 #include <Arduino.h>
 
 void init_VL53L7();
-void affichage_data(int* ligne, bool show=false);
-int find_minimum(int* ligne, int mini);
-void print_ligne(int* ligne);
-int calcul_moy_ligne(int* ligne);
+void affichage_data(uint32_t* ligne, bool show=false);
+int find_minimum(uint32_t* ligne, int mini);
+void print_ligne(uint32_t* ligne);
+int calcul_moy_ligne(uint32_t* ligne);
 
 #endif

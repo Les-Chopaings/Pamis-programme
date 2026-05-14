@@ -69,20 +69,20 @@
 #define PWREN_PIN -1
 
 void print_result(VL53L7CX_ResultsData *Result);
-void affichage_ligne(VL53L7CX_ResultsData *Result, int ligne[8], bool show=false);
+void affichage_ligne(VL53L7CX_ResultsData *Result, uint32_t ligne[8], bool show=false);
 void clear_screen(void);
 void handle_cmd(uint8_t cmd);
 void display_commands_banner(void);
-int find_minimum(int ligne[8], int mini);
-void print_ligne(int* ligne);
+int find_minimum(uint32_t ligne[8], int mini);
+void print_ligne(uint32_t* ligne);
 
 
 // Components.
 VL53L7CX sensor_vl53l7cx_top(&DEV_I2C, LPN_PIN, I2C_RST_PIN);
 
-bool EnableAmbient = false;
-bool EnableSignal = false;
-uint8_t res = VL53L7CX_RESOLUTION_8X8;
+bool EnableAmbient = true;
+bool EnableSignal = true;
+uint8_t res = VL53L7CX_RESOLUTION_4X4;
 char report[256];
 
 /* Setup ---------------------------------------------------------------------*/
@@ -113,7 +113,7 @@ void init_VL53L7()
   sensor_vl53l7cx_top.vl53l7cx_start_ranging();
 }
 
-void affichage_data(int *ligne, bool show)
+void affichage_data(uint32_t *ligne, bool show)
 {
   VL53L7CX_ResultsData Results;
   uint8_t NewDataReady;
@@ -124,7 +124,8 @@ void affichage_data(int *ligne, bool show)
 
   if ((!status) && (NewDataReady != 0)) {
     status = sensor_vl53l7cx_top.vl53l7cx_get_ranging_data(&Results);
-    affichage_ligne(&Results, ligne, show);
+    // affichage_ligne(&Results, ligne, show);
+    affichage_ligne(&Results, ligne, false);
   }
 
   // if (Serial.available()>0)
@@ -135,28 +136,39 @@ void affichage_data(int *ligne, bool show)
 }
 
 
-void affichage_ligne(VL53L7CX_ResultsData *Result, int *ligne, bool show)
+void affichage_ligne(VL53L7CX_ResultsData *Result, uint32_t *ligne, bool show)
 {
-    int row = 0;
+    // int row = 1;
 
-    for(int col = 0; col < 8; col++)
-    {
-        int index = row * 8 + col;
+    // for(int col = 0; col < 4; col++)
+    // {
+    //     int index = row * 4 + col;
 
-        if (show){
-          Serial.print(Result->distance_mm[index]);
-          Serial.print(" ");
-        }
-        ligne[col] = Result->distance_mm[index];
+    //     if (show){
+    //       Serial.print(Result->target_status[index]);
+    //       Serial.print(" ");
+    //     }
+    //     ligne[col] = Result->target_status[index];
         
-    }
+    // }
 
     // Serial.println();
+
+int j = 4, k;
+      // Print distance and status
+    for (k = (4 - 1); k >= 0; k--)
+    {
+      if (Result->nb_target_detected[j+k]>0){
+        ligne[3-k] = Result->signal_per_spad[j+k];
+        // Serial.print(Result->signal_per_spad[j+k]);
+        // Serial.println();
+      }
+    }
 }
 
 
-void print_ligne(int* ligne){
-  for (int index = 0; index < 8; index++){
+void print_ligne(uint32_t* ligne){
+  for (int index = 0; index < 4; index++){
     Serial.print(ligne[index]);
     Serial.print('\t');
   }
@@ -197,8 +209,6 @@ void print_result(VL53L7CX_ResultsData *Result)
   uint8_t number_of_zones = res;
 
   zones_per_line = (number_of_zones == 16) ? 4 : 8;
-
-  display_commands_banner();
 
   SerialPort.print("Cell Format :\n\n");
 

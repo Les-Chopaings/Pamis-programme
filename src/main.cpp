@@ -15,7 +15,7 @@
 ObjectifPos obj_pos = ObjectifPos(700,0);
 
 bool obj_atteint = false;
-int sensRotationservo = 1;
+int sensRotationservo = 0;
 unsigned long lastPWMChange = 0;
 unsigned long lastPrint = 0;
 unsigned long lasRotation = 0;
@@ -37,7 +37,7 @@ int pos_mot1 = 0;
 int pos_mot2 = 0;
 int speed = 0;
 
-int ligne[8];
+uint32_t ligne[8];
 int mini = 200;
 bool obstacle = false;
 
@@ -50,12 +50,9 @@ Position old_position = Position();
 int last_show = 0;
 
 float read_start = 0;
-bool etat_start = true;
+bool etat_start = false;
 
-// int speed = 100;
 Position position = Position();
-
-
 
 volatile uint32_t mot1_rising_count = 0;
 volatile uint32_t mot1_falling_count = 0;
@@ -136,6 +133,10 @@ void setup() {
   Position position;
   Serial.println("Boot OK");
 
+  read_start = digitalRead(PIN_OPTDIOD_start);
+  if (read_start){
+    etat_start = true;
+  }
   delay(2000);
 
   // Serial.printf("valeur param : %.2f, %.2f, %.2f, %.2f", param.stepAngleD, param.stepAngleG,param.stepForrwardD, param.stepForrwardG);
@@ -150,17 +151,16 @@ void loop() {
   unsigned long now = millis();
 
   read_start = digitalRead(PIN_OPTDIOD_start);
-  // Serial.printf("value readstart = %.2f", read_start);
-  // Serial.println();
+  Serial.printf("value readstart = %.2f", read_start);
+  Serial.println();
 
-  // if (read_start && !etat_start){
-  //   delay(5000);
-  //   etat_start = true;
-  // }
+
+  if (read_start && !etat_start){
+    delay(85000);
+    etat_start = true;
+  }
 
   if (etat_start){
-
-  float distance = sqrt(pow((position.x),2) + pow((position.y),2));
 
   /*---Fonction qui incrémente la vitesse des moteurs*/
   if ((speed < 220) && ((now - lastPWMChange) > 10)){
@@ -179,44 +179,35 @@ void loop() {
     last_asser = now;
     }
   else if(obj_atteint){
-    // Serial.printf("---STOP---");
-    // Serial.println();
+    Serial.printf("---STOP---");
+    Serial.println();
     stop();
   }
 
 
   /*---Fonction qui vérifie si besoin de s'arrêter*/
-  // if ((now - last_evitement) > 100){
-    
-  //   msstart = millis();
+  if ((now - last_evitement) > 50){
 
-  //   affichage_data(ligne, false);
-  //   float moy = calcul_moy_ligne(ligne);
-  //   // mini = find_minimum(ligne, mini);
+    affichage_data(ligne, false);
+    std::sort(ligne, ligne+4);
+    float med = ligne[2];
+    // int maximum = *std::max_element(ligne, ligne+8);
 
-  //   int maximum = ligne[0];
+    print_ligne(ligne);
+    Serial.printf("---------valeur med : %.2f", med);
+    Serial.println();
+    // Serial.printf("max ligne : %.2d", maximum);
+    // Serial.println();
 
-  //   for (int i = 1; i < 5; i++) {
-  //       maximum = max(maximum, ligne[i]);
-  //   } 
+    if (med > 1000){
+      Serial.printf("ON SARRETE!!!");
+      Serial.println();
+      stop();
+      speed = 0;
+    }
 
-  //   print_ligne(ligne);
-  //   Serial.println();
-  //   Serial.printf("valeur moy : %.2f", moy);
-  //   Serial.println();
-  //   Serial.printf("maxligne : %.2d", maximum);
-  //   Serial.println();
-
-  //   // if (moy < 70 && maximum - moy < 30){
-  //   //   stop();
-  //   //   speed = 0;
-  //   // }
-
-  //   last_evitement=now;
-  //   msend = millis();
-
-  //   // Serial.printf("temp total évitement : %.2f", msend - msstart);
-  // }
+    last_evitement=now;
+  }
 
 //   affichage_data(ligne, true);
 
