@@ -30,6 +30,7 @@ void initPort(void){
     ledcAttachPin(PIN_MOTOR_REV2, CHANNEL_MOTOR_REV2);
 }
 
+/*contrôle le moteur gauche*/
 void motorControl1(int drirectionFWD, int speed){
     if(drirectionFWD){
         ledcWrite(CHANNEL_MOTOR_FWD1,speed);
@@ -41,6 +42,7 @@ void motorControl1(int drirectionFWD, int speed){
     }
 }
 
+/*contrôle le moteur droit*/
 void motorControl2(int drirectionFWD, int speed){
     if(drirectionFWD){
         ledcWrite(CHANNEL_MOTOR_FWD2,speed);
@@ -54,7 +56,6 @@ void motorControl2(int drirectionFWD, int speed){
 
 
 void stop(){
-
     ledcWrite(CHANNEL_MOTOR_FWD1,0);
     ledcWrite(CHANNEL_MOTOR_REV1,0);
     ledcWrite(CHANNEL_MOTOR_FWD2,0);
@@ -111,31 +112,48 @@ void odometrieCalc(Position &position, Roue roue){
         default:
             break;
     }
-    position.teta = normalizeAngle(position.teta);
+    // position.teta = normalizeAngle(position.teta);
 }
 
 
 float calcul_angle(Position &position, ObjectifPos &obj_pos){
 
+    Serial.printf("----------Position X : %.2f; Position Y : %.2f", position.x, position.y);
+    Serial.println();
+    Serial.printf("Objectif X : %.2f; Objectif Y : %.2f", obj_pos.x, obj_pos.y);
+    Serial.println();
+
     float deltax = obj_pos.x - position.x;
     float deltay = obj_pos.y - position.y;
 
-    return atan2(deltax,deltay);
+    Serial.printf("deltaX : %.2f; DeltaY : %.2f", deltax, deltay);
+    Serial.println();
+    Serial.printf("deltaY / DeltaX : %.2f", deltay / deltax);
+    Serial.println();
+
+    float angle = atan2f(deltay, deltax) * (obj_pos.x - position.x)/obj_pos.x ;
+    float angleb = atanf(deltay / deltax);
+
+    Serial.printf("angle : %.2f; angleb : %.2f", angle, angleb);
+    Serial.println();
+    if (abs(angle - PI/2) < 1e-2){
+        Serial.printf("TROP LOIN");
+        Serial.println();
+        return 0;
+    }
+    else{
+        return angle;
+    }
 }
 
-
-float computeAngleError(Position &position,
-                        float targetAngle)
+float computeAngleError(Position &position, float targetAngle)
 {
+    Serial.printf("angle : %.2f; position-THETA : %.2f", targetAngle, position.teta);
+    Serial.println();
     return (targetAngle - position.teta)*RAD_TO_DEG;
 }
 
-
-void computeMotors(int speed,
-                   float turn,
-                   float &left,
-                   float &right)
-{   
+void computeMotors(int speed, float turn, float &left, float &right){
 
     if (turn > 0){
         right  = speed - turn;
@@ -145,34 +163,37 @@ void computeMotors(int speed,
         right  = speed + abs(turn);
         left = speed - abs(turn);
     }
-
 }
-
-
 
 float Asservissement_angulaire(Position &position, ObjectifPos & obj_pos){
 
-    float Kangle = 0.2;
+    float Kangle = 1.5; // facteur de conversion angle(deg) -> vitesse
 
-    float angle_obj = calcul_angle(position, obj_pos);
-    float angle_error = computeAngleError(position, angle_obj);
+    float angle_obj = calcul_angle(position, obj_pos); //angle en rad
+    float angle_error = computeAngleError(position, angle_obj); // angle en deg
+    Serial.printf("objectif : %.2f; erreur angle : %.2f", angle_obj, angle_error);
+    Serial.println();
 
     return Kangle*angle_error;
 }
 
+/*---Fonction pour aller vers des coordonnées définies---*/
 void go_forward(ObjectifPos & obj_pos, Position &position, int speed, bool *obj_atteint){
 
-    float dist = sqrt(pow((position.x - obj_pos.x),2) + pow((position.y - obj_pos.y),2));
+    // float dist = sqrt(pow((position.x - obj_pos.x),2) + pow((position.y - obj_pos.y),2));
     int sensRotation_mot1 = 1;
     int sensRotation_mot2 = 1;
 
-    if (dist > 10){
+    if (position.x < obj_pos.x){
         
-
         float turn = Asservissement_angulaire(position, obj_pos);
 
-        motorControl1( sensRotation_mot1, constrain(speed - turn, 0, 255));
-        motorControl2(sensRotation_mot2, constrain(speed + turn, 0, 255));
+        motorControl1(sensRotation_mot1, constrain(speed + turn , 0, 255));
+        motorControl2(sensRotation_mot2, constrain(speed - turn , 0, 255));
+        Serial.printf("turn : %.2f", turn);
+        Serial.println();
+        Serial.printf("Valeur vitesse moteur : %.2f et %.2f", constrain(speed + turn, 0, 255), constrain(speed - turn, 0, 255));
+        Serial.println();
 
         *obj_atteint = false;
     }
